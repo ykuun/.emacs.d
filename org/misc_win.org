@@ -1,0 +1,45 @@
+#  -*- coding: utf-8 -*-
+
+* proxy
+#+BEGIN_SRC emacs-lisp for tencent
+(when (not (string= (getenv "USERNAME") "ykdu"))
+  (message "set url-proxy-services for tencent network")
+  (setq url-proxy-services '(("http" . "127.0.0.1:12639")))
+)
+#+END_SRC
+* font
+#+BEGIN_SRC emacs-lisp
+(when (display-graphic-p)
+  (set-face-attribute
+   'default nil
+   :font (font-spec :name "-outline-Consolas-bold-italic-normal-mono-*-*-*-*-c-*-iso10646-1"
+					:weight 'normal
+					:slant 'normal
+					:size 12.5))
+  (dolist (charset '(kana han symbol cjk-misc bopomofo))
+	(set-fontset-font
+	 (frame-parameter nil 'font)
+	 charset
+	 (font-spec :name "-outline-微软雅黑-normal-normal-normal-sans-*-*-*-*-p-*-iso10646-1"
+				:weight 'normal
+				:slant 'normal
+				:size 13.5)))
+  )
+#+END_SRC
+* coding
+#+BEGIN_SRC emacs-lisp
+(prefer-coding-system 'utf-8)
+#+END_SRC
+* Windows Optimization
+#+BEGIN_SRC emacs-lisp
+(setq w32-get-true-file-attributes nil)
+#+END_SRC
+* xref tags
+#+BEGIN_SRC emacs-lisp
+(setq tags-table-list '())
+#+END_SRC
+* diff
+#+BEGIN_SRC emacs-lisp
+(setq diff-command "D:/Program Files/Git/usr/bin/diff.exe")
+(setq ediff-diff-program "D:/Program Files/Git/usr/bin/diff.exe")
+#+END_SRC

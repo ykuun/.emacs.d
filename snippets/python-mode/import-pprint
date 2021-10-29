@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: import-pprint
+# key: ipp
+# --
+from pprint import pprint
+$1

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: begin-src
+# key: bsrc
+# --
+#+BEGIN_SRC ${1:cpp} :results ${2:value}
+$3
+#+END_SRC

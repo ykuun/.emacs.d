@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+
+* MISC
+#+BEGIN_SRC emacs-lisp
+(when (eq system-type 'darwin)
+  (setenv "PATH"
+		  (concat
+		   "/usr/local/bin" ":"
+		   (getenv "PATH")
+		   )
+		  )
+
+  (add-to-list 'exec-path "/usr/local/bin")
+  )
+
+(when (eq system-type 'darwin)
+  ;; darwin的设置修改 command 与 option 按钮的相关语意
+  (setq 
+   mac-command-modifier 'meta
+   mac-option-modifier 'super)
+  )
+(defvar server-socket-dir "~/.emacs.d/server/")
+#+END_SRC
+
+* Encoding
+#+BEGIN_SRC emacs-lisp
+(when (eq system-type 'darwin)
+  (prefer-coding-system 'utf-8-unix)
+  )
+#+END_SRC
+
+* ispell
+#+BEGIN_SRC emacs-lisp
+(when (eq system-type 'darwin)
+  (setq
+   ispell-program-name "/usr/local/bin/ispell")
+  )
+#+END_SRC
+
+* Functions
+#+BEGIN_SRC emacs-lisp
+(defun ctags-create (path)
+  (interactive "Dcreate ctags from:")
+  (cd path)
+  (pwd)
+  (async-shell-command "ctags -e --if0=yes --c-kinds=+px --c++-kinds=+px --extra=+q --fields=+iaS --languages=c -R -f tags-c")
+  (async-shell-command "ctags -e --if0=yes --c-kinds=+px --c++-kinds=+px --extra=+q --fields=+iaS --languages=c++ -R -f tags-cpp")
+  (async-shell-command "ctags -e --if0=yes --c-kinds=+px --c++-kinds=+px --extra=+q --fields=+iaS --languages=lua -R -f tags-lua")
+  )
+#+END_SRC
+
+* xref tags
+#+BEGIN_SRC emacs-lisp
+(setq tags-table-list '())
+#+END_SRC
+

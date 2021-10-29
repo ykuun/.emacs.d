@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: ue4-ufunction
+# key: ufunc
+# --
+UFUNCTION($1)

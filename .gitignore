@@ -1,0 +1,12 @@
+build/
+*.exe
+*.asm
+*.log
+*.o
+tmp/
+temp/
+*.swp
+.#*
+\#*\#
+*~
+org/*.el

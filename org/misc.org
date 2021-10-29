@@ -1,0 +1,510 @@
+# -*- coding: utf-8 -*-
+#+TAGS: DEPRECATED
+
+* Manual
+** 安装当前所有选中的package
+   1. pacakge-install-selected-packages
+** 其中需要安装服务器的有
+   1. (Python)jedi:install-server
+** 配置环境变量
+   1. OPTIONAL ORG_ROOT 指向目前使用的org目录，所有org capture的内容都会添加到这个目录下面
+   2. OPTIONAL ORG_WORK_ROOT 指向当前工作相关的org目录
+** 需要注意的是
+   当init.el中的，selected-package变量的值可能不能正确的表达，这不分可能需要手动的处理
+** UnrealEngine
+#+BEGIN_SRC bat :results value
+set LDFLAGS="-fuse-ld=lld-link"
+cmake -H. -G "Unix Makefiles" -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_C_COMPILER:PATH="D:\\Program Files\\LLVM\\bin\\clang.exe" -DCMAKE_CXX_COMPILER:PATH="D:\\Program Files\\LLVM\\bin\\clang++.exe" -DCMAKE_C_COMPILER_ID="Clang" -DCMAKE_CXX_COMPILER_ID="Clang" -DCMAKE_SYSTEM_NAME="Generic" ..
+#+END_SRC
+** Windows Client
+rewrite the shortcut
+C:\emacs-27.1-x86_64\bin\emacsclientw.exe --create-frame --no-wait --alternate-editor runemacs.exe
+** LINKS
+[[https://www.emacswiki.org/emacs/OptimizingEmacsStartup][EmacsWiki: Optimizing Emacs Startup]]
+[[https://emacs-lsp.github.io/lsp-mode/page/performance/][Performance - LSP Mode - LSP support for Emacs]]
+
+* Emacs Configuration
+** Common
+#+BEGIN_SRC emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+(setq
+ large-file-warning-threshold 1000000
+ scroll-conservatively 10
+ scroll-margin 7
+ buffer-file-coding-system 'utf-8
+ make-backup-files nil
+ create-lockfiles nil
+)
+
+(set-fill-column 140)
+
+(when (display-graphic-p)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+  (tool-bar-mode 0)
+  (menu-bar-mode 0)
+  (toggle-scroll-bar 0)
+  )
+
+(line-number-mode)
+(column-number-mode)
+(global-visual-line-mode 1)
+(global-linum-mode 0)
+;; 让一些插件可以支持语法相关的内容
+(semantic-mode t)
+(keychain-refresh-environment)
+;; disable annoying beeeeep !!!
+(setq visible-bell nil ring-bell-function (lambda ()))
+#+END_SRC
+** Encoding
+#+BEGIN_SRC emacs-lisp
+(define-coding-system-alias 'GB18030 'gb18030)
+(define-coding-system-alias 'utf8 'utf-8-unix)
+#+END_SRC
+** Optimization
+  #+BEGIN_SRC emacs-lisp
+  ;; chinese character is using a big font lib which will trigger the GC on every movement
+  (setq inhibit-compacting-font-caches t)
+  #+END_SRC
+** Recentf
+#+BEGIN_SRC emacs-lisp
+(recentf-mode t)
+(setq
+ recentf-max-menu-items 1000
+ recentf-max-saved-items nil
+ )
+#+END_SRC
+
+** Color Theme
+ #+BEGIN_SRC emacs-lisp
+ (load-theme 'tango-dark t)
+ (require 'highlight-indentation)
+ ;; (set-face-background 'highlight-indentation-face "#e3e3d3")
+ ;; (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
+ #+END_SRC
+
+** Grep
+#+BEGIN_SRC emacs-lisp
+(setq grep-command "rg --vimgrep -i -t cpp -t lua -t cs -t c -t config -t txt ")
+#+END_SRC
+
+** Async Shell
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'display-buffer-alist
+             (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
+#+END_SRC
+
+* Function Defines
+#+BEGIN_SRC emacs-lisp
+(defun ykdu-command (command-buffer)
+  "Run shell command and output to given buffer"
+  (let* ((output-buffer command-buffer)
+         (error-buffer output-buffer))
+
+    (setq compile_command (read-string "Shell Command: "))
+    (get-buffer-create output-buffer)
+    (get-buffer-create error-buffer)
+    (kill-buffer output-buffer-name)
+    ;;    (shell-command s_command output-buffer error-buffer)
+    (switch-to-buffer-other-window output-buffer)
+    (with-current-buffer output-buffer
+      (read-only-mode -1)
+      (kill-region (point-min) (point-max))
+      (insert "Process Begins !!!!\n")
+      (insert (format-time-string "%F %H:%M:%S(%3N)"))
+      (insert "\n=====================================\n\n")
+      (let* ((command_result (shell-command-to-string compile_command)))
+        (insert (decode-coding-string command_result 'gbk)))
+      (insert "\n=====================================\n")
+      (insert "Process Finished !!!!\n")
+      (insert (format-time-string "%Y-%m-%d %H:%M:%S(%3N)"))
+      (compilation-mode)
+      (beginning-of-buffer)
+      )
+    ;; back to previous window
+    (other-window -1)
+    )
+  )
+
+(defun ykdu-shell-command ()
+  (interactive)
+  (let (
+        (bf-name (buffer-file-name))
+        (output-buffer-name "*ykdu-shell*")
+        )
+    (let (
+          (default-directory (if (not bf-name) "~" (file-name-directory bf-name)))
+          )
+      (ykdu-command output-buffer-name)
+      )
+    )
+  )
+
+;; (defun workspace-coding-set (coding)
+;;   (interactive "zCoding: ")
+;;   "set defualt coding systems and prefer coding system at once"
+;;   (set-default-coding-systems coding)
+;;   ;; (locale-coding-system coding)
+;;   (prefer-coding-system coding)
+;;   )
+
+(defun open-fold (path)
+  "update for mf client"
+  (interactive "Dstart from: ")
+  (message (concat "start \"" path "\""))
+  (browse-url-of-file path)
+  )
+
+(defun save-dir-path (path)
+  (interactive "Dcopy: ")
+  ;; (message (concat "start " path))
+  (kill-new path)
+  )
+
+(defun copy-cur-dir-path (path)
+  (interactive "Dcopy from: ")
+  ;; (message (concat "start " path))
+  (kill-new path)
+  )
+
+(defun store-cur-file-name ()
+  (interactive)
+  (kill-new (file-name-nondirectory buffer-file-name))
+  )
+
+(setq rg-ykuun-args '("--fixed-strings" "-i" "--vimgrep" "-t cpp" "-t py" "-t lua" "-t config" "-t txt" "-t lisp" "-t org" "-t cs" "-t json" "-t log" "--type-add nut:*.nut -t nut" "--type-add gnut:*.gnut -t gnut"))
+
+(defun rg-thing-at-point-default (search-term &optional arg)
+  (interactive
+   (list
+    (read-from-minibuffer (format "Default Ripgrep %ssearch for: "
+                                  (if current-prefix-arg
+                                      "regexp "
+                                    ""))
+                          (projectile-symbol-or-selection-at-point))
+    current-prefix-arg))
+  (ripgrep-regexp search-term default-directory rg-ykuun-args)
+  )
+
+(defun rg-thing-at-point (search-term &optional arg)
+  (interactive
+   (list
+    (read-from-minibuffer (format "Ripgrep %ssearch for: "
+                                  (if current-prefix-arg
+                                      "regexp "
+                                    ""))
+                          (projectile-symbol-or-selection-at-point))
+    current-prefix-arg))
+  (if (projectile-project-root)
+      (progn
+        (ripgrep-regexp search-term (projectile-project-root) rg-ykuun-args)
+        )
+    (message "default root do ripgrep")
+    (ripgrep-regexp search-term default-directory rg-ykuun-args)
+    )
+  )
+
+(defun xref-find-apropos-at-point (search-term &optional arg)
+  (interactive
+   (list
+    (read-from-minibuffer (format "xref find apropos %ssearch for: "
+                                  (if current-prefix-arg
+                                      "regexp "
+                                    ""))
+                          (projectile-symbol-or-selection-at-point))
+    current-prefix-arg))
+  (xref-find-apropos search-term)
+  )
+
+(defun occur-thing-at-point (search-term &optional arg)
+  (interactive
+   (list
+    (read-from-minibuffer "List lins for regexp: "
+                          (projectile-symbol-or-selection-at-point)
+                          current-prefix-arg)
+    ))
+  (occur search-term)
+  )
+
+;; (defun add-cur-tags-in-dir-root-to-tags-table-list (current-root-dir)
+;;   (interactive (list (read-directory-name "DirRootForTags: " (projectile-project-root))))
+;;   (message (concat current-root-dir "/"))
+;;   (if (file-readable-p (concat current-root-dir "tags-c")) 
+;;       (add-to-list 'tags-table-list (concat current-root-dir "tags-c")) nil)
+;;   (if (file-readable-p (concat current-root-dir "tags-lua")) 
+;;       (add-to-list 'tags-table-list (concat current-root-dir "tags-lua")) nil)
+;;   (if (file-readable-p (concat current-root-dir "tags-cpp")) 
+;;       (add-to-list 'tags-table-list (concat current-root-dir "tags-cpp")) nil)
+;;   )
+#+END_SRC
+* Programming Language
+** C\CPP
+#+BEGIN_SRC emacs-lisp
+(setq-default c++-tab-always-indent t)
+(setq-default c-default-style "awk")
+(setq-default c-basic-offset 4)
+(setq-default c-indent-level 4)
+(setq-default tab-width 4)
+(setq-default indent-tabs-mode t)
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+#+END_SRC
+
+** Lua
+#+BEGIN_SRC emacs-lisp
+(setq-default lua-indent-level 4)
+(setq lsp-clients-emmy-lua-jar-path (expand-file-name "bin/lua/EmmyLua-LS-all.jar" user-emacs-directory))
+#+END_SRC
+
+** Python
+#+BEGIN_SRC emacs-lisp
+(setq-default python-indent-offset 4)
+#+END_SRC
+** C#
+#+BEGIN_SRC emacs-lisp
+(setq lsp-csharp-server-path (expand-file-name "bin/omnisharp/OmniSharp.exe" user-emacs-directory))
+(setq lsp-csharp-server-install-dir (expand-file-name "bin/omnisharp/" user-emacs-directory))
+#+END_SRC
+* Version Control
+#+BEGIN_SRC emacs-lisp
+(remove-hook 'find-file-hook 'vc-refresh-state)
+(setq jit-lock-defer-time 0.01)
+;; magit receiving gbk from git.exe
+#+END_SRC
+** Magit
+#+BEGIN_SRC emacs-lisp
+(setq magit-git-output-coding-system 'utf-8)
+;; (setq magit-git-output-coding-system 'chinese-gbk)
+;; 强制设置commit editmsg的编码
+(modify-coding-system-alist 'file "\.git/COMMIT_EDITMSG" 'utf-8)
+#+END_SRC
+
+* Input Method
+** Pyim
+#+BEGIN_SRC emacs-lisp
+;; input method
+(when (require 'pyim nil 'noerror)
+  (progn
+	(setq default-input-method "pyim")
+	(setq pyim-default-scheme 'microsoft-shuangpin)
+	(setq pyim-page-tooltip 'popup)
+	(setq pyim-page-length 9) 
+	(setq pyim-punctuation-translate-p '(no yes auto))
+	)
+  )
+(when (require 'pyim-basedict nil 'noerror)
+  (progn
+	(pyim-basedict-enable)
+	)
+  )
+#+END_SRC
+
+* Org mode
+#+BEGIN_SRC emacs-lisp
+(setq
+ org-agenda-files nil
+ org-tags-column -90
+ org-src-tab-acts-natively t
+ org-edit-src-content-indentation 0
+ )
+
+(require 'org-protocol)
+(require 'edit-server)
+(require 'server)
+
+(defun server-ensure-safe-dir (dir) "Noop" t) ; 非常烦人的一个错误，直接将相关的函数置空
+
+(server-start)				; 注意需要手动创建文件夹
+(edit-server-start)
+(setq edit-server-new-frame nil)
+
+;; babel 这个地方不添加将会导致相关的babel无法被加载
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '(
+   (python . t)
+   (matlab . t)
+   (emacs-lisp . t)
+   (lua . t)
+   (shell . t)
+   ;; (C . t)
+   ))
+
+(org-indent-mode)
+(org-display-inline-images t t)
+
+(setq org-todo-keywords
+      '((sequence "TODO" "DOING" "ARCHIVE" "|" "DONE" "ABORT" "SUSPENDED")))
+(setq org-agenda-inhibit-startup t)
+(setq org-startup-indented t)
+
+;; VAR
+(message (concat "SET ORG ROOT TO " (getenv "ORG_ROOT")))
+(message (concat "SET ORG WORK ROOT TO " (getenv "ORG_WORK_ROOT")))
+(setq org-directory (getenv "ORG_ROOT"))
+;; (add-hook 'after-init-hook '(lambda () (org-todo-list) (get-buffer "*Org Agenda*")))
+;; .\emacsclientw.exe "org-protocol:///capture?template=w&url=http%3a%2f%2fduckduckgo%2ecom&title=DuckDuckGo"
+(setq org-work-daily (concat (getenv "ORG_WORK_ROOT") "/daily.org"))
+(setq org-incomming-work (concat (getenv "ORG_WORK_ROOT") "/incoming_work.org"))
+(setq org-capture-templates
+      '(
+        ("t" "Todo" entry (file+headline "inbox.org" "Incomming")
+         "* TODO %?\n %T\n %i\n %a")
+        ("w" "Website with Tags" entry (file+headline "sites.org" "Regular Visit Sites")
+         "* %:description %?\t%^g\nLINK: %:annotation\nCaptured On: %U")
+        ("W" "Website" entry (file+headline "sites.org" "Regular Visit Sites")
+         "* %:description %?\t\nLINK: %:annotation\nCapured On: %U")
+        ("R" "Website ToRead" entry (file+headline "sites.org" "Sites ToRead")
+         "* TOREAD %:description %?\t%^g\nLINK: %:annotation\nCapured On: %U")
+        ("d" "Daily Recording" entry (file+datetree "daily.org")
+         "* %?\n %i\n %a" :tree-type week)
+        ("r" "Tools and Refers" entry (file+headline "refers.org" "Tools & Refers")
+         "* %:description %?\t\nLINK: %:annotation\n%U")
+        ("l" "DO IT WHILE ALIVE" entry (file+headline "life.org" "LIFE MOVES ON")
+         "* PLAN %?\n %a\n %T\n %i\n")
+        ("D" "Work Daily Recording" entry (file+datetree org-work-daily "Daily Records")
+         "* 工作日简报%?\n %i\n %a" :tree-type week)
+        ("T" "Work TAPD Recording" entry (file+olp+datetree org-work-daily "TAPD Records")
+         "* %?\n %i\n %a" :tree-type week)
+        ("i" "Incoming Works" entry (file+headline org-incomming-work "Looks Good To Me!!!!")
+         "* TODO %?\n %a\n %T\n %i\n")
+        )
+      )
+#+END_SRC
+* LSP Mode
+#+BEGIN_SRC emacs-lisp
+(require 'lsp)
+(add-hook 'c++-mode-hook 'lsp)
+(add-hook 'c-mode-hook 'lsp)
+(functionp 'json-serialize)
+(setq lsp-clients-clangd-args '("-j=6" "-background-index" "-log=error"))
+(setq gc-cons-threshold (* 512 1024 1024))
+(setq read-process-output-max (* 128 1024 1024))
+(setq lsp-file-watch-threshold nil)
+(setq lsp-idle-delay 0.5)
+(setq lsp-enable-file-watchers nil)
+(setq lsp-log-io nil)
+(setq lsp-print-performance t)
+(setq lsp-keep-workspace-alive t)
+(setq lsp-enable-indentation t)
+(setq lsp-enable-xref t)
+(setq lsp-enable-completion-at-point t)
+(setq lsp-response-timeout 5)
+(setq lsp-diagnostic-package :none)
+(setq lsp-completion-provider :none)	;; 如果不进行相关的屏蔽 capf 会高于其他的backends，相关的设置已经写入了company模块的部分，不需要lsp再次设置
+
+#+END_SRC
+* Company
+#+BEGIN_SRC emacs-lisp
+(setq 
+ company-minimum-prefix-length 3
+ company-idle-delay 0.1
+ )
+(global-company-mode t)
+
+(setq company-backends '((company-capf company-files company-keywords company-dabbrev-code company-etags company-dabbrev)))
+(setq company-dabbrev-downcase nil)
+
+(setq company-transformers '(company-sort-by-backend-importance))
+(add-hook 'after-init-hook #'company-statistics-mode)
+#+END_SRC
+* Yasnippet
+#+BEGIN_SRC emacs-lisp
+(yas-global-mode t)
+#+END_SRC
+* Ivy Counsel Swiper
+#+BEGIN_SRC emacs-lisp
+(require 'ivy)
+(require 'counsel)
+(require 'swiper)
+
+(eval-after-load 'ivy
+  '(ivy-mode t)
+  )
+
+(eval-after-load 'counsel
+  '(counsel-mode t)
+)
+
+(setq ivy-use-virtual-buffers t)
+
+;; function
+(defun resume-ivy-with-prefix-arg ()
+  (interactive)
+  (setq current-prefix-arg '(4))		; C-u prefix command
+  (ivy-resume)
+  )
+#+END_SRC
+* Projectile
+#+BEGIN_SRC emacs-lisp
+(add-hook 'c++-mode-hook (projectile-mode t))
+(add-hook 'c-mode-hook (projectile-mode t))
+
+(setq projectile-indexing-method 'native)
+(setq projectile-enable-caching t)
+(setq projectile-require-project-root nil)
+(setq projectile-completion-system 'ivy)
+#+END_SRC
+
+* Code Navigation
+#+BEGIN_SRC emacs-lisp
+;; (defalias 'xref-find-definitions 'counsel-etags-find-tag-at-point)
+;; (defalias 'xref-find-apropos-at-point 'counsel-etags-grep)
+#+END_SRC
+
+* key binding
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "<f9>") 'ykdu-shell-command)
+(global-set-key (kbd "M-p") 'backward-paragraph)
+(global-set-key (kbd "M-n") 'forward-paragraph)
+(global-set-key (kbd "C-o") 'newline-and-indent)
+(global-set-key (kbd "M-/") 'company-complete)
+
+(global-set-key (kbd "C-c k") 'move-shortcut-prefix)
+(global-set-key (kbd "C-c j") 'editor-shortcut-prefix)
+(global-set-key (kbd "C-c s") 'search-shortcut-prefix)
+(global-set-key (kbd "C-c c") 'code-shortcut-prefix)
+
+(define-prefix-command 'move-shortcut-prefix)
+(define-key move-shortcut-prefix (kbd "j") 'windmove-down)
+(define-key move-shortcut-prefix (kbd "k") 'windmove-up)
+(define-key move-shortcut-prefix (kbd "h") 'windmove-left)
+(define-key move-shortcut-prefix (kbd "l") 'windmove-right)
+
+(define-prefix-command 'editor-shortcut-prefix)
+(define-key editor-shortcut-prefix (kbd "e") 'open-fold)
+(define-key editor-shortcut-prefix (kbd "b") 'pop-tag-mark)
+(define-key editor-shortcut-prefix (kbd "m") 'magit-status)
+
+(define-key editor-shortcut-prefix (kbd "l") 'org-store-link)
+(define-key editor-shortcut-prefix (kbd "C-l") 'org-insert-link)
+(define-key editor-shortcut-prefix (kbd "a") 'org-agenda)
+(define-key editor-shortcut-prefix (kbd "c") 'org-capture)
+;; [[https://github.com/magnars/expand-region.el][magnars/expand-region.el: Emacs extension to increase ;; selected region by semantic units.]]
+;; If you expand too far, you can contract the region by pressing - (minus key), or by prefixing the ;; ;; shortcut you defined with a negative argument: C-- C-=.
+(define-key editor-shortcut-prefix (kbd "=") 'er/expand-region)
+;; my define function map
+(define-key editor-shortcut-prefix (kbd "1") 'store-cur-file-name)
+
+(define-prefix-command 'search-shortcut-prefix)
+(define-key search-shortcut-prefix (kbd "f") 'find-name-dired)
+(define-key search-shortcut-prefix (kbd "F") 'projectile-find-file)
+(define-key search-shortcut-prefix (kbd "g") 'rg-thing-at-point)
+(define-key search-shortcut-prefix (kbd "G") 'rg-thing-at-point-default)
+(define-key search-shortcut-prefix (kbd "o") 'occur-thing-at-point)
+(define-key search-shortcut-prefix (kbd "s") 'swiper-isearch-thing-at-point)
+(define-key search-shortcut-prefix (kbd "r") 'counsel-recentf)
+(define-key search-shortcut-prefix (kbd "i") 'counsel-imenu)
+(define-key search-shortcut-prefix (kbd "C-r") 'resume-ivy-with-prefix-arg)
+
+(define-prefix-command 'code-shortcut-prefix)
+(define-key code-shortcut-prefix (kbd "=") 'lsp-format-region)
+(define-key code-shortcut-prefix (kbd "y") 'yas-expand)
+#+END_SRC
+
+* Appendix
+  #+BEGIN_SRC shell
+  ;; (async-shell-command "ctags -e --if0=yes --c-kinds=+px --c++-kinds=+px --extra=+q --fields=+iaS --languages=c -R -f tags-c")
+  ;; (async-shell-command "ctags -e --if0=yes --c-kinds=+px --c++-kinds=+px --extra=+q --fields=+iaS --languages=c++ -R -f tags-cpp")
+  ;; (async-shell-command "ctags -e --if0=yes --c-kinds=+px --c++-kinds=+px --extra=+q --fields=+iaS --languages=lua -R -f tags-lua")
+  #+END_SRC

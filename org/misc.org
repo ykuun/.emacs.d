@@ -173,7 +173,7 @@ C:\emacs-27.1-x86_64\bin\emacsclientw.exe --create-frame --no-wait --alternate-e
   (kill-new (file-name-nondirectory buffer-file-name))
   )
 
-(setq rg-ykuun-args '("--fixed-strings" "-i" "--vimgrep" "-t cpp" "-t py" "-t lua" "-t config" "-t txt" "-t lisp" "-t org" "-t cs" "-t json" "-t log" "--type-add nut:*.nut -t nut" "--type-add gnut:*.gnut -t gnut"))
+(setq rg-ykuun-args '("--fixed-strings" "-i" "--vimgrep" "-t cpp" "-t py" "-t lua" "-t config" "-t txt" "-t lisp" "-t org" "-t cs" "-t json" "-t log" "--type-add nut:*.nut -t nut" "--type-add gnut:*.gnut -t gnut" "--type-add ush:*.ush -t ush" "--type-add usf:*.usf -t usf"))
 
 (defun rg-thing-at-point-default (search-term &optional arg)
   (interactive
@@ -452,6 +452,10 @@ C:\emacs-27.1-x86_64\bin\emacsclientw.exe --create-frame --no-wait --alternate-e
 ;; (defalias 'xref-find-apropos-at-point 'counsel-etags-grep)
 #+END_SRC
 
+* flycheck
+(require 'flycheck-clangcheck)
+(flycheck-select-checker 'c/c++-clangcheck)
+(setq flycheck-clangcheck-analyze nil)
 * key binding
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "<f9>") 'ykdu-shell-command)

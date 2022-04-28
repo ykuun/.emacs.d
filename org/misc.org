@@ -15,6 +15,9 @@
 #+BEGIN_SRC bat :results value
 set LDFLAGS="-fuse-ld=lld-link"
 cmake -H. -G "Unix Makefiles" -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_C_COMPILER:PATH="D:\\Program Files\\LLVM\\bin\\clang.exe" -DCMAKE_CXX_COMPILER:PATH="D:\\Program Files\\LLVM\\bin\\clang++.exe" -DCMAKE_C_COMPILER_ID="Clang" -DCMAKE_CXX_COMPILER_ID="Clang" -DCMAKE_SYSTEM_NAME="Generic" ..
+
+G:\apgame\workspace\AEngine\Engine\Binaries\DotNet\UnrealBuildTool.exe -mode=GenerateClangDatabase -project=G:\apgame\workspace\AClient\trunk\AClient\AClient.uproject -game -engine AClientEditor Development Win64
+move .\compile_commands.json ..\
 #+END_SRC
 ** Windows Client
 rewrite the shortcut
@@ -173,7 +176,7 @@ C:\emacs-27.1-x86_64\bin\emacsclientw.exe --create-frame --no-wait --alternate-e
   (kill-new (file-name-nondirectory buffer-file-name))
   )
 
-(setq rg-ykuun-args '("--fixed-strings" "-i" "--vimgrep" "-t cpp" "-t py" "-t lua" "-t config" "-t txt" "-t lisp" "-t org" "-t cs" "-t json" "-t log" "--type-add nut:*.nut -t nut" "--type-add gnut:*.gnut -t gnut" "--type-add ush:*.ush -t ush" "--type-add usf:*.usf -t usf"))
+(setq rg-ykuun-args '("--fixed-strings" "-i" "-t cpp" "-t py" "-t lua" "-t config" "-t txt" "-t lisp" "-t org" "-t cs" "-t json" "-t log" "--type-add nut:*.nut -t nut" "--type-add gnut:*.gnut -t gnut" "--type-add ush:*.ush -t ush" "--type-add usf:*.usf -t usf"))
 
 (defun rg-thing-at-point-default (search-term &optional arg)
   (interactive
@@ -327,11 +330,13 @@ C:\emacs-27.1-x86_64\bin\emacsclientw.exe --create-frame --no-wait --alternate-e
    (emacs-lisp . t)
    (lua . t)
    (shell . t)
+   (ditaa . t)
    ;; (C . t)
    ))
 
 (org-indent-mode)
 (org-display-inline-images t t)
+(setq org-support-shift-select t)
 
 (setq org-todo-keywords
       '((sequence "TODO" "DOING" "ARCHIVE" "|" "DONE" "ABORT" "SUSPENDED")))

@@ -24,11 +24,13 @@
 (setq package-check-signature nil)
 
 (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-(package-initialize)
 
 ;; use domestic source
-(setq package-archives '(("gnu"   . "https://elpa.emacs-china.org/gnu/")
-			 ("melpa" . "https://elpa.emacs-china.org/melpa/")))
+(setq package-archives '(("gnu"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+                         ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+						 ("org"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")))
+(package-initialize)
+
 
 (when (eq system-type 'windows-nt)
   (org-babel-load-file

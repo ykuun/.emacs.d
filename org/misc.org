@@ -327,11 +327,13 @@ C:\emacs-27.1-x86_64\bin\emacsclientw.exe --create-frame --no-wait --alternate-e
    (emacs-lisp . t)
    (lua . t)
    (shell . t)
+   (ditaa . t)
    ;; (C . t)
    ))
 
 (org-indent-mode)
 (org-display-inline-images t t)
+(setq org-support-shift-select t)
 
 (setq org-todo-keywords
       '((sequence "TODO" "DOING" "ARCHIVE" "|" "DONE" "ABORT" "SUSPENDED")))

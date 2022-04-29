@@ -458,9 +458,13 @@ C:\emacs-27.1-x86_64\bin\emacsclientw.exe --create-frame --no-wait --alternate-e
 #+END_SRC
 
 * flycheck
-(require 'flycheck-clangcheck)
-(flycheck-select-checker 'c/c++-clangcheck)
-(setq flycheck-clangcheck-analyze nil)
+#+BEGIN_SRC emacs-lisp
+;; (require 'flycheck-clangcheck)
+;; (setq flycheck-clangcheck-analyze t)
+;; (flycheck-select-checker 'c/c++-clangcheck)
+;; (setq flycheck-clangcheck-build-path "G:/apgame/workspace")
+#+END_SRC
+
 * key binding
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "<f9>") 'ykdu-shell-command)
